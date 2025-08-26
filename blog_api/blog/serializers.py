@@ -1,5 +1,9 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate
+
 
 
 class UserRegSerializer(serializers.ModelSerializer):
@@ -16,10 +20,31 @@ class UserRegSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'password': 'password did not match.'})
         return attrs
     
-    def create(self, validation_data):
+    def create(self, validate_data):
         user = User.objects.create_user(
-            username=validation_data['username'],
-            email=validation_data['email'],
-            password=validation_data['password']
+            username=validate_data['username'],
+            email=validate_data['email'],
+            password=validate_data['password']
         )
+        Token.objects.create(user=user)  # optional: create token on signup
         return user
+    
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField(style={'input_type': 'password'})
+
+    def validate(self, attrs):
+        username = attrs.get('username')
+        password = attrs.get('password')
+
+        if username and password:
+            user = authenticate(username=username, password=password)
+            if user:
+                if not user.is_active:
+                    raise serializers.ValidationError("User account is disabled.")
+                attrs['user'] = user
+                return attrs
+            else:
+                raise serializers.ValidationError('Invalid username or password.')
+            
+            
