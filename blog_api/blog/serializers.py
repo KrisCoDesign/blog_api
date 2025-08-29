@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
-
+from .models import Post, Comment, Category, Profile
 
 
 class UserRegSerializer(serializers.ModelSerializer):
@@ -47,4 +47,23 @@ class LoginSerializer(serializers.Serializer):
             else:
                 raise serializers.ValidationError('Invalid username or password.')
             
-            
+class PostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = '__all__'
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = '__all__'
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = '__all__'
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model= Profile
+        fields = '__all__'
