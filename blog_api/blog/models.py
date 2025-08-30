@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.text import slugify
 
+from django.db.models.signals import post_save
+from django.dispatch import receiver
     
 class Category(models.Model):
     name = models.CharField(max_length=200, null=True)
@@ -42,10 +44,21 @@ class Comment(models.Model):
         return f"Comment by {self.author}"
 
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     bio = models.TextField(max_length=500, blank=True)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, related_name='posts')
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE, null=True, related_name='comments')
 
     def __str__(self):
         return self.user
+    
+    #using signal to create the user profile, basically triggers a 
+    # corresponding profile row creation once a user has been created via any means; admin, drf etc.
+    @receiver(post_save, sender=User)
+    def create_user_profile(sender, instance, created, **kwargs):
+        if created:
+            Profile.objects.create(user=instance)
+
+    @receiver(post_save, sender=User)
+    def save_user_profile(sender, instance, **kwargs):
+        instance.profile.save()

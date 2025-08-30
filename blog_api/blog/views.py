@@ -59,12 +59,23 @@ class CategoryView(viewsets.ModelViewSet):
     permission_class = [IsAuthenticatedOrReadOnly]
     queryset = Category.objects.all()
 
-class ProfileView(viewsets.ModelViewSet):
+class ProfileView(APIView):
     serializer_class = ProfileSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
+    # queryset = Profile.objects.all()
     
-    def get_object(self):
-        return self.request.user
+    # def get_object(self):
+    #     return self.request.user
+    
+    # def get_serializer_context(self):
+    #     return {'request': self.request}
+
+    def get(self, request):
+        if request.user.is_authenticated:
+            user = request.user
+            profile = Profile.objects.get(user=user)
+            serializer = ProfileSerializer(profile)
+            return Response(serializer.data)
 
 class ExternalNewsView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
