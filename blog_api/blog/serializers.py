@@ -3,17 +3,19 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
-from .models import Post, Comment, Category, Profile
+from .models import Post, Comment, Category, UserProfile
 
 
-class UserRegSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(style={
         'input_type': 'password'}, write_only=True)
     
     class Meta:
         model = User
         fields = ['username', 'email', 'password', 'password2']
-        extra_kwargs = {'password': {'write_only': True}}
+        extra_kwargs = {
+            'password': {'write_only': True} # cannot be read back
+            }  
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
@@ -52,7 +54,6 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = '__all__'
 
-
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
@@ -64,11 +65,13 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model= Profile
-        fields = '__all__'
+    username = serializers.SerializerMethodField()
 
-# class UserSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ['id', 'username', 'email']
+    class Meta:
+        model= UserProfile
+        fields = '__all__'
+        read_only_fields = ['user', 'username', 'comment', 'post']
+
+    def get_username(self, obj):
+        return obj.user.username
+

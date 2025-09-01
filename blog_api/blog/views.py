@@ -4,19 +4,19 @@ from rest_framework.response import Response
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
-from .serializers import UserRegSerializer, LoginSerializer
+from .serializers import UserSerializer, LoginSerializer
 from django.contrib.auth import authenticate
 from django.contrib.auth import login, logout
 from rest_framework import views, viewsets, status
 from .serializers import PostSerializer, CommentSerializer, CategorySerializer, ProfileSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from .models import Post, Comment, Category, Profile
+from .models import Post, Comment, Category, UserProfile
 import http.client, urllib.parse
 import json
 
-class UserRegView(generics.CreateAPIView):
+class UserView(generics.CreateAPIView):
     queryset = User.objects.all()
-    serializer_class = UserRegSerializer
+    serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
 
 class LoginView(generics.GenericAPIView):
@@ -59,23 +59,17 @@ class CategoryView(viewsets.ModelViewSet):
     permission_class = [IsAuthenticatedOrReadOnly]
     queryset = Category.objects.all()
 
-class ProfileView(APIView):
+class UserProfileView(viewsets.ModelViewSet):
     serializer_class = ProfileSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    # queryset = Profile.objects.all()
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    queryset = UserProfile.objects.all()
     
-    # def get_object(self):
-    #     return self.request.user
-    
-    # def get_serializer_context(self):
-    #     return {'request': self.request}
-
-    def get(self, request):
-        if request.user.is_authenticated:
-            user = request.user
-            profile = Profile.objects.get(user=user)
-            serializer = ProfileSerializer(profile)
-            return Response(serializer.data)
+    # def get(self, request):
+    #     if request.user.is_authenticated:
+    #         user = request.user
+    #         profile = UserProfile.objects.get(user=user)
+    #         serializer = ProfileSerializer(profile)
+    #         return Response(serializer.data)
 
 class ExternalNewsView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
