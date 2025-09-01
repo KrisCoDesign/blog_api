@@ -12,6 +12,7 @@ A robust RESTful API for a modern blog application built with Django and Django 
 - **RESTful Architecture**: Clean, standardized API endpoints following REST principles
 
 ## 📋 API Endpoints
+The ModelViewSet works hand‑in‑hand with routers to generate standard CRUD URLs automatically.
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
